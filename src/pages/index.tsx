@@ -1,13 +1,34 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
 
 import { api } from "~/utils/api";
 
+const Feed = () => {
+  const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
+
+  if (postsLoading)
+    return (
+      <div className="flex grow">
+        {/* <LoadingPage /> */}
+      </div>
+    );
+
+  if (!data) return <div>Something went wrong</div>;
+
+  return (
+    <div className="flex grow flex-col overflow-y-scroll">
+      {/* {[...data, ...data, ...data, ...data].map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))} */}
+    </div>
+  );
+};
+
 const Home: NextPage = () => {
 
-  const user = useUser()
+  const user = useUser();
+  const { data } = api.posts.getAll.useQuery();
 
   return (
     <>
@@ -17,10 +38,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-       <div>
-        {!user.isSignedIn && <SignInButton />}
-        {user.isSignedIn && <SignOutButton />}
-       </div>
+        <div>
+          {!user.isSignedIn && <SignInButton />}
+          {user.isSignedIn && <SignOutButton />}
+          <div>
+            {data && data.map(post => <div key={post.id}>{post.content}</div>)}
+          </div>
+        </div>
       </main>
     </>
   );
